@@ -10,7 +10,7 @@ import java.sql.*
 import kotlinx.coroutines.*
 
 fun Application.configureDatabases() {
-    val dbConnection: Connection = connectToPostgres(System.getenv("POSTGRES") == null)
+    val dbConnection: Connection = connectToPostgres(!environment.developmentMode)
 
     todoRoutes(dbConnection)
 }
@@ -42,6 +42,10 @@ fun Application.connectToPostgres(embedded: Boolean): Connection {
     return if (embedded) {
         DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "root", "")
     } else {
-        DriverManager.getConnection("jdbc:${System.getenv("POSTGRES")}")
+        val url = System.getenv("postgres.url")
+        val user = System.getenv("postgres.user")
+        val password = System.getenv("postgres.password")
+
+        DriverManager.getConnection(url, user, password)
     }
 }
