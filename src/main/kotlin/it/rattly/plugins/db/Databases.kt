@@ -10,7 +10,7 @@ import java.sql.*
 import kotlinx.coroutines.*
 
 fun Application.configureDatabases() {
-    val dbConnection: Connection = connectToPostgres(System.getenv("POSTGRES") != null)
+    val dbConnection: Connection = connectToPostgres(System.getenv("POSTGRES") == null)
 
     todoRoutes(dbConnection)
 }
