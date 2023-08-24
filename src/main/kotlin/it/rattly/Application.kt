@@ -29,10 +29,12 @@ fun Application.module() {
 
 fun Application.configureMisc() {
     install(Webjars)
-    install(CallLogging) {
-        level = Level.INFO
-        filter { call -> call.request.path().startsWith("/") }
-    }
+
+    if (environment.developmentMode)
+        install(CallLogging) {
+            level = Level.INFO
+            filter { call -> call.request.path().startsWith("/") }
+        }
 
     install(ContentNegotiation) {
         json(Json {
