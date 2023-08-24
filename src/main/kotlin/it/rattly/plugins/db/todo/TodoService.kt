@@ -12,7 +12,7 @@ class TodoService(private val connection: Connection) {
     companion object {
         @Language("PostgreSQL")
         private const val CREATE_TABLE_TODOS =
-            "CREATE TABLE TODOS (ID SERIAL PRIMARY KEY, TITLE VARCHAR(255), CONTENT VARCHAR(255));"
+            "CREATE TABLE IF NOT EXISTS TODOS (ID SERIAL PRIMARY KEY, TITLE VARCHAR(255), CONTENT VARCHAR(255));"
 
         @Language("PostgreSQL")
         private const val SELECT_TODO_BY_ID = "SELECT id, title, content FROM todos WHERE id = ?"
