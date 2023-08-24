@@ -3,19 +3,29 @@ package it.rattly.views.todos
 import it.rattly.views.layout.layout
 import kotlinx.html.*
 import kotlinx.html.InputType.*
+import java.util.*
+import java.util.concurrent.ThreadLocalRandom
 
 fun HTML.listTodos() = layout {
-    h1 { +"todos!!!" }
-    ul {
-        id = "list"
-        attributes["hx-get"] = "/todos"
-        attributes["hx-trigger"] = "load"
+    val uid = UUID.randomUUID()
 
-        p(classes = "htmx-indicator") { +"Loading..." }
+    h1 { +"todos!!!" }
+    div {
+        attributes["hx-ext"] = "sse"
+        attributes["sse-connect"] = "/sse?uid=$uid"
+
+        ul {
+            id = "list"
+
+            attributes["hx-get"] = "/todos?uid=$uid"
+            attributes["hx-trigger"] = "load,sse:newTodo"
+
+            p(classes = "htmx-indicator") { +"Loading..." }
+        }
     }
 
     form {
-        attributes["hx-post"] = "/todos"
+        attributes["hx-post"] = "/todos?uid=$uid"
         attributes["hx-ext"] = "json-enc"
         attributes["hx-swap"] = "beforeend"
         attributes["hx-target"] = "#list"

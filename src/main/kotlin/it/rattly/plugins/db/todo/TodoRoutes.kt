@@ -7,6 +7,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import it.rattly.plugins.triggerSSE
 import it.rattly.views.todos.todo
 import kotlinx.html.*
 import kotlinx.html.InputType.text
@@ -18,25 +19,29 @@ fun Application.todoRoutes(dbConnection: () -> Connection) {
     routing {
         // Create to-do
         post("/todos") {
+            val id = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val todo = call.receive<Todo>().also { todoService.create(it) }
 
             call.respondHtml {
                 body {
                     li {
-                        todo(todo)
+                        todo(todo, id)
                     }
                 }
             }
+
+            triggerSSE(id)
         }
 
         get("/todos") {
+            val id = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val todos = todoService.readAll()
 
             call.respondHtml {
                 body {
                     for (todoItem in todos) {
                         li {
-                            todo(todoItem)
+                            todo(todoItem, id)
                         }
                     }
                 }
@@ -57,6 +62,7 @@ fun Application.todoRoutes(dbConnection: () -> Connection) {
 
         // Show to-do edit form
         get("/todos/{id}/form") {
+            val uid = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
 
             try {
@@ -64,7 +70,7 @@ fun Application.todoRoutes(dbConnection: () -> Connection) {
                 call.respondHtml {
                     body {
                         form {
-                            attributes["hx-put"] = "/todos/$id"
+                            attributes["hx-put"] = "/todos/$id?uid=$uid"
                             attributes["hx-ext"] = "json-enc"
                             attributes["hx-target"] = "closest li"
                             attributes["hx-swap"] = "outerHTML"
@@ -95,6 +101,7 @@ fun Application.todoRoutes(dbConnection: () -> Connection) {
 
         // Update to-do
         put("/todos/{id}") {
+            val uid = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
             val todo = call.receive<Todo>().apply { this.id = id }
 
@@ -102,18 +109,22 @@ fun Application.todoRoutes(dbConnection: () -> Connection) {
             call.respondHtml {
                 body {
                     li {
-                        todo(todo)
+                        todo(todo, uid)
                     }
                 }
             }
+
+            triggerSSE(uid)
         }
 
         // Delete to-do
         delete("/todos/{id}") {
+            val uid = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
 
             todoService.delete(id)
             call.respond(HttpStatusCode.OK)
+            triggerSSE(uid)
         }
     }
 }

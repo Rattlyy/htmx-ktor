@@ -1,5 +1,6 @@
 package it.rattly
 
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -24,6 +25,7 @@ fun Application.module() {
     configureMisc()
     configureDatabases()
     configureRouting()
+    configureSSE()
     configureStyles()
 }
 
@@ -44,6 +46,10 @@ fun Application.configureMisc() {
     }
 
     install(Compression) {
+         condition {
+             it.contentType != ContentType.Text.EventStream
+         }
+
         gzip {
             priority = 1.0
         }

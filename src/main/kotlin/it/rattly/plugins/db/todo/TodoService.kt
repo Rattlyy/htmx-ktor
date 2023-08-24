@@ -1,5 +1,6 @@
 package it.rattly.plugins.db.todo
 
+import it.rattly.plugins.triggerSSE
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import org.intellij.lang.annotations.Language
