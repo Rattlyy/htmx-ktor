@@ -2,6 +2,7 @@ package it.rattly.views.todos
 
 import it.rattly.views.layout.layout
 import kotlinx.html.*
+import kotlinx.html.InputType.*
 
 fun HTML.listTodos() = layout {
     h1 { +"todos!!!" }
@@ -20,13 +21,13 @@ fun HTML.listTodos() = layout {
         attributes["hx-target"] = "#list"
 
         input {
-            type = InputType.text
+            type = text
             name = "title"
             placeholder = "Title"
         }
 
         input(classes = "pl") {
-            type = InputType.text
+            type = text
             name = "content"
             placeholder = "Content"
         }

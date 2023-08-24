@@ -7,8 +7,9 @@ fun HTML.layout(e: BODY.() -> Unit) {
         link(rel = "stylesheet", href = "https://cdn.simplecss.org/simple.min.css")
         link(rel = "stylesheet", href = "/styles.css", type = "text/css")
 
-        script(src = "webjars/htmx.org/1.9.4/dist/htmx.min.js") {}
-        script(src = "webjars/htmx.org/1.9.4/dist/ext/json-enc.js") {}
+        val htmx = { e: String -> "webjars/htmx.org/1.9.4/$e" }
+        script(src = htmx("dist/htmx.min.js")) {}
+        script(src = htmx("dist/ext/json-enc.js")) {}
     }
 
     body {

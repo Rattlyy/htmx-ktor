@@ -11,7 +11,7 @@ import io.ktor.server.request.*
 import io.ktor.server.webjars.*
 import it.rattly.plugins.*
 import it.rattly.plugins.db.configureDatabases
-import it.rattly.views.layout.styles
+import it.rattly.views.layout.configureStyles
 import kotlinx.serialization.json.Json
 import org.slf4j.event.Level
 
@@ -24,20 +24,21 @@ fun Application.module() {
     configureMisc()
     configureDatabases()
     configureRouting()
-    styles()
+    configureStyles()
 }
 
 fun Application.configureMisc() {
+    install(Webjars)
+    install(CallLogging) {
+        level = Level.INFO
+        filter { call -> call.request.path().startsWith("/") }
+    }
+
     install(ContentNegotiation) {
         json(Json {
             prettyPrint = true
             isLenient = true
         })
-    }
-    install(Webjars)
-    install(CallLogging) {
-        level = Level.INFO
-        filter { call -> call.request.path().startsWith("/") }
     }
 
     install(Compression) {

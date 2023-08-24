@@ -11,6 +11,7 @@ fun HtmlBlockTag.todo(todo: Todo) {
         attributes["hx-delete"] = "/todos/${todo.id}"
         attributes["hx-swap"] = "delete"
         attributes["hx-target"] = "closest li"
+
         +"Delete"
     }
 
@@ -18,6 +19,7 @@ fun HtmlBlockTag.todo(todo: Todo) {
         attributes["hx-get"] = "/todos/${todo.id}/form"
         attributes["hx-target"] = "closest li"
         attributes["hx-swap"] = "innerHTML"
+
         +"Edit"
     }
 }

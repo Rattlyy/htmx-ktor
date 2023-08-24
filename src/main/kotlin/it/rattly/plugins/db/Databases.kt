@@ -1,18 +1,19 @@
 package it.rattly.plugins.db
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import it.rattly.plugins.db.todo.todoRoutes
-import java.sql.*
 import kotlinx.coroutines.*
+import java.sql.*
+
 
 fun Application.configureDatabases() {
-    val dbConnection: Connection = connectToPostgres(environment.developmentMode)
-
-    todoRoutes(dbConnection)
+    todoRoutes(connectToPostgres(environment.developmentMode))
 }
 
 /**
@@ -36,16 +37,29 @@ fun Application.configureDatabases() {
  * @return [Connection] that represent connection to the database. Please, don't forget to close this connection when
  * your application shuts down by calling [Connection.close]
  * */
-fun Application.connectToPostgres(embedded: Boolean): Connection {
+fun connectToPostgres(embedded: Boolean): () -> Connection {
     Class.forName("org.postgresql.Driver")
 
-    return if (embedded) {
-        DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "root", "")
+    if (embedded) {
+        val connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "root", "")
+        return { connection }
     } else {
         val url = System.getenv("postgres.url")
-        val user = System.getenv("postgres.user")
+        val username = System.getenv("postgres.user")
         val password = System.getenv("postgres.password")
+        val dataSource = HikariDataSource(HikariConfig().apply {
+            this.username = username
+            this.password = password
 
-        DriverManager.getConnection(url, user, password)
+            setJdbcUrl(url)
+            setPoolName("DB Pool")
+            setDriverClassName("org.postgresql.Driver")
+            addDataSourceProperty("cachePrepStmts", "true")
+            addDataSourceProperty("prepStmtCacheSize", "250")
+            addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
+            setMaximumPoolSize(20)
+        })
+
+        return { dataSource.connection }
     }
 }

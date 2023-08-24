@@ -8,7 +8,7 @@ import java.sql.Statement
 
 @Serializable
 data class Todo(var id: Int? = null, val title: String, val content: String)
-class TodoService(private val connection: Connection) {
+class TodoService(private val connection: () -> Connection) {
     companion object {
         @Language("PostgreSQL")
         private const val CREATE_TABLE_TODOS =
@@ -32,16 +32,17 @@ class TodoService(private val connection: Connection) {
     }
 
     init {
-        val statement = connection.createStatement()
-        statement.executeUpdate(CREATE_TABLE_TODOS)
+        connection().createStatement().executeUpdate(CREATE_TABLE_TODOS)
     }
 
     // Create new to-do item
     suspend fun create(todo: Todo): Int = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement(INSERT_TODO, Statement.RETURN_GENERATED_KEYS)
-        statement.setString(1, todo.title)
-        statement.setString(2, todo.content)
-        statement.executeUpdate()
+        val statement = connection().prepareStatement(INSERT_TODO, Statement.RETURN_GENERATED_KEYS).apply {
+            setString(1, todo.title)
+            setString(2, todo.content)
+
+            executeUpdate()
+        }
 
         val generatedKeys = statement.generatedKeys
         if (generatedKeys.next()) {
@@ -52,10 +53,8 @@ class TodoService(private val connection: Connection) {
         }
     }
 
-    suspend fun read(): List<Todo> = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement(SELECT_ALL_TODOS)
-        val rs = statement.executeQuery()
-
+    suspend fun readAll(): List<Todo> = withContext(Dispatchers.IO) {
+        val rs = connection().prepareStatement(SELECT_ALL_TODOS).executeQuery()
         val list = mutableListOf<Todo>()
 
         while (rs.next()) {
@@ -70,14 +69,14 @@ class TodoService(private val connection: Connection) {
     }
 
     // Read a to-do
-    suspend fun read(id: Int): Todo = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement(SELECT_TODO_BY_ID)
-        statement.setInt(1, id)
-        val resultSet = statement.executeQuery()
+    suspend fun findById(id: Int): Todo = withContext(Dispatchers.IO) {
+        val rs = connection().prepareStatement(SELECT_TODO_BY_ID).apply {
+            setInt(1, id)
+        }.executeQuery()
 
-        if (resultSet.next()) {
-            val title = resultSet.getString("title")
-            val content = resultSet.getString("content")
+        if (rs.next()) {
+            val title = rs.getString("title")
+            val content = rs.getString("content")
             return@withContext Todo(id, title, content)
         } else {
             throw Exception("Record not found")
@@ -86,17 +85,20 @@ class TodoService(private val connection: Connection) {
 
     // Update a to-do
     suspend fun update(id: Int, todo: Todo) = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement(UPDATE_TODO)
-        statement.setString(1, todo.title)
-        statement.setString(2, todo.content)
-        statement.setInt(3, id)
-        statement.executeUpdate()
+        with(connection().prepareStatement(UPDATE_TODO)) {
+            setString(1, todo.title)
+            setString(2, todo.content)
+            setInt(3, id)
+
+            executeUpdate()
+        }
     }
 
     // Delete a to-do
     suspend fun delete(id: Int) = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement(DELETE_TODO)
-        statement.setInt(1, id)
-        statement.executeUpdate()
+        with(connection().prepareStatement(DELETE_TODO)) {
+            setInt(1, id)
+            executeUpdate()
+        }
     }
 }

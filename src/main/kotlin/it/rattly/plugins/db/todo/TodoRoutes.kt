@@ -3,29 +3,26 @@ package it.rattly.plugins.db.todo
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*
+import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import it.rattly.views.todos.todo
-import kotlinx.css.form
 import kotlinx.html.*
+import kotlinx.html.InputType.text
 import java.sql.Connection
 
-fun Application.todoRoutes(dbConnection: Connection) {
+fun Application.todoRoutes(dbConnection: () -> Connection) {
     val todoService = TodoService(dbConnection)
 
     routing {
         // Create to-do
         post("/todos") {
-            val todo = call.receive<Todo>()
-            val id = todoService.create(todo)
+            val todo = call.receive<Todo>().also { todoService.create(it) }
 
             call.respondHtml {
                 body {
-                    LI(
-                        initialAttributes = mutableMapOf(),
-                        consumer = consumer
-                    ).visit {
+                    li {
                         todo(todo)
                     }
                 }
@@ -33,15 +30,12 @@ fun Application.todoRoutes(dbConnection: Connection) {
         }
 
         get("/todos") {
-            val todos = todoService.read()
+            val todos = todoService.readAll()
 
             call.respondHtml {
                 body {
                     for (todoItem in todos) {
-                        LI(
-                            initialAttributes = mutableMapOf(),
-                            consumer = consumer
-                        ).visit {
+                        li {
                             todo(todoItem)
                         }
                     }
@@ -51,10 +45,10 @@ fun Application.todoRoutes(dbConnection: Connection) {
 
         // Read to-do
         get("/todos/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: throw IllegalArgumentException("Invalid ID")
+            val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
 
             try {
-                val todo = todoService.read(id)
+                val todo = todoService.findById(id)
                 call.respond(HttpStatusCode.OK, todo)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.NotFound)
@@ -63,10 +57,10 @@ fun Application.todoRoutes(dbConnection: Connection) {
 
         // Show to-do edit form
         get("/todos/{id}/form") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: throw IllegalArgumentException("Invalid ID")
+            val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
 
             try {
-                val todo = todoService.read(id)
+                val todo = todoService.findById(id)
                 call.respondHtml {
                     body {
                         form {
@@ -76,13 +70,13 @@ fun Application.todoRoutes(dbConnection: Connection) {
                             attributes["hx-swap"] = "outerHTML"
 
                             input {
-                                type = InputType.text
+                                type = text
                                 name = "title"
                                 value = todo.title
                             }
 
                             input(classes = "pl") {
-                                type = InputType.text
+                                type = text
                                 name = "content"
                                 value = todo.content
                             }
@@ -101,18 +95,13 @@ fun Application.todoRoutes(dbConnection: Connection) {
 
         // Update to-do
         put("/todos/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: throw IllegalArgumentException("Invalid ID")
-            val todo = call.receive<Todo>()
+            val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
+            val todo = call.receive<Todo>().apply { this.id = id }
 
             todoService.update(id, todo)
-            todo.id = id
-
             call.respondHtml {
                 body {
-                    LI(
-                        initialAttributes = mutableMapOf(),
-                        consumer = consumer
-                    ).visit {
+                    li {
                         todo(todo)
                     }
                 }
@@ -121,10 +110,15 @@ fun Application.todoRoutes(dbConnection: Connection) {
 
         // Delete to-do
         delete("/todos/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: throw IllegalArgumentException("Invalid ID")
+            val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
 
             todoService.delete(id)
             call.respond(HttpStatusCode.OK)
         }
     }
 }
+
+fun BODY.li(e: LI.() -> Unit) = LI(
+    initialAttributes = mutableMapOf(),
+    consumer = consumer
+).visit(e)
