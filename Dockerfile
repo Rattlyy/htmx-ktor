@@ -1,6 +1,6 @@
 FROM gradle:7-jdk11 AS build
-COPY --chown=gradle:gradle . /home/gradle/src
 RUN XDG_CACHE_HOME="$HOME/.gradle:$XDG_CACHE_HOME"
+COPY --chown=gradle:gradle . /home/gradle/src
 RUN gradle buildFatJar --no-daemon
 
 FROM openjdk:11
