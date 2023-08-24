@@ -12,10 +12,9 @@ import it.rattly.views.todos.todo
 import kotlinx.html.*
 import kotlinx.html.InputType.text
 import java.sql.Connection
+import javax.sql.DataSource
 
-fun Application.todoRoutes(dbConnection: () -> Connection) {
-    val todoService = TodoService(dbConnection)
-
+fun Application.todoRoutes(todoService: TodoService) {
     routing {
         // Create to-do
         post("/todos") {
@@ -39,7 +38,7 @@ fun Application.todoRoutes(dbConnection: () -> Connection) {
 
             call.respondHtml {
                 body {
-                    for (todoItem in todos) {
+                    for (todoItem in todos.sortedByDescending { it.id }) {
                         li {
                             todo(todoItem, id)
                         }

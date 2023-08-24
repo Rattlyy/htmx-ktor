@@ -7,13 +7,14 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import it.rattly.plugins.db.todo.TodoService
 import it.rattly.plugins.db.todo.todoRoutes
 import kotlinx.coroutines.*
 import java.sql.*
 
 
 fun Application.configureDatabases() {
-    todoRoutes(connectToPostgres(environment.developmentMode))
+    todoRoutes(TodoService(connectToPostgres(environment.developmentMode)))
 }
 
 /**
@@ -31,35 +32,42 @@ fun Application.configureDatabases() {
  * user and password values.
  *
  *
- * @param embedded -- if [true] defaults to an embedded database for tests that runs locally in the same process.
+ * @param embedded -- if true defaults to an embedded database for tests that runs locally in the same process.
  * In this case you don't have to provide any parameters in configuration file, and you don't have to run a process.
  *
  * @return [Connection] that represent connection to the database. Please, don't forget to close this connection when
  * your application shuts down by calling [Connection.close]
  * */
-fun connectToPostgres(embedded: Boolean): () -> Connection {
+fun connectToPostgres(embedded: Boolean): HikariDataSource {
     Class.forName("org.postgresql.Driver")
 
-    if (embedded) {
-        val connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "root", "")
-        return { connection }
-    } else {
-        val url = System.getenv("postgres.url")
-        val username = System.getenv("postgres.user")
-        val password = System.getenv("postgres.password")
-        val dataSource = HikariDataSource(HikariConfig().apply {
-            this.username = username
-            this.password = password
+    val config = HikariConfig().apply {
+        setPoolName("DB Pool")
+        addDataSourceProperty("cachePrepStmts", "true")
+        addDataSourceProperty("prepStmtCacheSize", "250")
+        addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
+        setMaximumPoolSize(20)
+    }
 
-            setJdbcUrl(url)
-            setPoolName("DB Pool")
-            setDriverClassName("org.postgresql.Driver")
-            addDataSourceProperty("cachePrepStmts", "true")
-            addDataSourceProperty("prepStmtCacheSize", "250")
-            addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
-            setMaximumPoolSize(20)
+    if (embedded) {
+        val dataSource = HikariDataSource(config.apply {
+            this.username = "root"
+            this.password = ""
+
+            setDriverClassName("org.h2.Driver")
+            setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
         })
 
-        return { dataSource.connection }
+        return dataSource
+    } else {
+        val dataSource = HikariDataSource(config.apply {
+            this.username = System.getenv("postgres.user")
+            this.password = System.getenv("postgres.password")
+
+            setDriverClassName("org.postgresql.Driver")
+            setJdbcUrl(System.getenv("postgres.url"))
+        })
+
+        return dataSource
     }
 }

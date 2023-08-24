@@ -27,7 +27,7 @@ fun HTML.listTodos() = layout {
     form {
         attributes["hx-post"] = "/todos?uid=$uid"
         attributes["hx-ext"] = "json-enc"
-        attributes["hx-swap"] = "beforeend"
+        attributes["hx-swap"] = "afterbegin"
         attributes["hx-target"] = "#list"
 
         input {

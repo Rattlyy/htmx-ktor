@@ -1,5 +1,6 @@
 package it.rattly.plugins.db.todo
 
+import com.zaxxer.hikari.HikariDataSource
 import it.rattly.plugins.triggerSSE
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
@@ -9,7 +10,7 @@ import java.sql.Statement
 
 @Serializable
 data class Todo(var id: Int? = null, val title: String, val content: String)
-class TodoService(private val connection: () -> Connection) {
+class TodoService(private val dataSource: HikariDataSource) {
     companion object {
         @Language("PostgreSQL")
         private const val CREATE_TABLE_TODOS =
@@ -33,12 +34,12 @@ class TodoService(private val connection: () -> Connection) {
     }
 
     init {
-        connection().createStatement().executeUpdate(CREATE_TABLE_TODOS)
+        dataSource.connection.use { it.createStatement().executeUpdate(CREATE_TABLE_TODOS) }
     }
 
     // Create new to-do item
     suspend fun create(todo: Todo): Int = withContext(Dispatchers.IO) {
-        connection().use {
+        dataSource.connection.use {
             val statement = it.prepareStatement(INSERT_TODO, Statement.RETURN_GENERATED_KEYS).apply {
                 setString(1, todo.title)
                 setString(2, todo.content)
@@ -57,7 +58,7 @@ class TodoService(private val connection: () -> Connection) {
     }
 
     suspend fun readAll(): List<Todo> = withContext(Dispatchers.IO) {
-        connection().use {
+        dataSource.connection.use {
             val rs = it.prepareStatement(SELECT_ALL_TODOS).executeQuery()
             val list = mutableListOf<Todo>()
 
@@ -75,7 +76,7 @@ class TodoService(private val connection: () -> Connection) {
 
     // Read a to-do
     suspend fun findById(id: Int): Todo = withContext(Dispatchers.IO) {
-        connection().use {
+        dataSource.connection.use {
             val rs = it.prepareStatement(SELECT_TODO_BY_ID).apply {
                 setInt(1, id)
             }.executeQuery()
@@ -92,7 +93,7 @@ class TodoService(private val connection: () -> Connection) {
 
     // Update a to-do
     suspend fun update(id: Int, todo: Todo) = withContext(Dispatchers.IO) {
-        connection().use {
+        dataSource.connection.use {
             with(it.prepareStatement(UPDATE_TODO)) {
                 setString(1, todo.title)
                 setString(2, todo.content)
@@ -105,7 +106,7 @@ class TodoService(private val connection: () -> Connection) {
 
     // Delete a to-do
     suspend fun delete(id: Int) = withContext(Dispatchers.IO) {
-        connection().use {
+        dataSource.connection.use {
             with(it.prepareStatement(DELETE_TODO)) {
                 setInt(1, id)
                 executeUpdate()
