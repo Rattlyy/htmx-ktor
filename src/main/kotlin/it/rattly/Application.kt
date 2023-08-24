@@ -41,6 +41,7 @@ fun Application.configureMisc() {
     install(ContentNegotiation) {
         json(Json {
             prettyPrint = true
+
             isLenient = true
         })
     }
