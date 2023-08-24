@@ -38,68 +38,78 @@ class TodoService(private val connection: () -> Connection) {
 
     // Create new to-do item
     suspend fun create(todo: Todo): Int = withContext(Dispatchers.IO) {
-        val statement = connection().prepareStatement(INSERT_TODO, Statement.RETURN_GENERATED_KEYS).apply {
-            setString(1, todo.title)
-            setString(2, todo.content)
+        connection().use {
+            val statement = it.prepareStatement(INSERT_TODO, Statement.RETURN_GENERATED_KEYS).apply {
+                setString(1, todo.title)
+                setString(2, todo.content)
 
-            executeUpdate()
-        }
+                executeUpdate()
+            }
 
-        val generatedKeys = statement.generatedKeys
-        if (generatedKeys.next()) {
-            todo.id = generatedKeys.getInt(1)
-            return@withContext generatedKeys.getInt(1)
-        } else {
-            throw Exception("Unable to retrieve the id of the newly inserted todo")
+            val generatedKeys = statement.generatedKeys
+            if (generatedKeys.next()) {
+                todo.id = generatedKeys.getInt(1)
+                return@withContext generatedKeys.getInt(1)
+            } else {
+                throw Exception("Unable to retrieve the id of the newly inserted todo")
+            }
         }
     }
 
     suspend fun readAll(): List<Todo> = withContext(Dispatchers.IO) {
-        val rs = connection().prepareStatement(SELECT_ALL_TODOS).executeQuery()
-        val list = mutableListOf<Todo>()
+        connection().use {
+            val rs = it.prepareStatement(SELECT_ALL_TODOS).executeQuery()
+            val list = mutableListOf<Todo>()
 
-        while (rs.next()) {
-            val title = rs.getString("title")
-            val id = rs.getInt("id")
-            val content = rs.getString("content")
+            while (rs.next()) {
+                val title = rs.getString("title")
+                val id = rs.getInt("id")
+                val content = rs.getString("content")
 
-            list += Todo(id, title, content)
+                list += Todo(id, title, content)
+            }
+
+            return@withContext list
         }
-
-        return@withContext list
     }
 
     // Read a to-do
     suspend fun findById(id: Int): Todo = withContext(Dispatchers.IO) {
-        val rs = connection().prepareStatement(SELECT_TODO_BY_ID).apply {
-            setInt(1, id)
-        }.executeQuery()
+        connection().use {
+            val rs = it.prepareStatement(SELECT_TODO_BY_ID).apply {
+                setInt(1, id)
+            }.executeQuery()
 
-        if (rs.next()) {
-            val title = rs.getString("title")
-            val content = rs.getString("content")
-            return@withContext Todo(id, title, content)
-        } else {
-            throw Exception("Record not found")
+            if (rs.next()) {
+                val title = rs.getString("title")
+                val content = rs.getString("content")
+                return@withContext Todo(id, title, content)
+            } else {
+                throw Exception("Record not found")
+            }
         }
     }
 
     // Update a to-do
     suspend fun update(id: Int, todo: Todo) = withContext(Dispatchers.IO) {
-        with(connection().prepareStatement(UPDATE_TODO)) {
-            setString(1, todo.title)
-            setString(2, todo.content)
-            setInt(3, id)
+        connection().use {
+            with(it.prepareStatement(UPDATE_TODO)) {
+                setString(1, todo.title)
+                setString(2, todo.content)
+                setInt(3, id)
 
-            executeUpdate()
+                executeUpdate()
+            }
         }
     }
 
     // Delete a to-do
     suspend fun delete(id: Int) = withContext(Dispatchers.IO) {
-        with(connection().prepareStatement(DELETE_TODO)) {
-            setInt(1, id)
-            executeUpdate()
+        connection().use {
+            with(it.prepareStatement(DELETE_TODO)) {
+                setInt(1, id)
+                executeUpdate()
+            }
         }
     }
 }
