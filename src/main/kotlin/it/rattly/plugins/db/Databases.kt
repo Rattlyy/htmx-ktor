@@ -14,7 +14,7 @@ import java.sql.*
 
 
 fun Application.configureDatabases() {
-    todoRoutes(TodoService(connectToPostgres(environment.developmentMode)))
+    todoRoutes(TodoService(connectToPostgres(System.getenv("USE_EMBEDDED_DB").toBoolean())))
 }
 
 /**
