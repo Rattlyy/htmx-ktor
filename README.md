@@ -1,4 +1,4 @@
 # HTMX Sample app
 Ktor + PostgreSQL + HTMX + kotlin.html. All CRUD methods are implemented.
 ## Live demo
-https://htmx-ktor.onrender.com/ (Currently not available)
+https://htmx-ktor.onrender.com/
