@@ -10,7 +10,6 @@ fun HTML.listTodos() = layout {
     val uid = UUID.randomUUID()
 
     h1 { +"todos!!!" }
-    p { +"PS: Database is embedded, so it wipes every time the instance gets restarted by Render (after 5m of inactivity)"}
     div {
         attributes["hx-ext"] = "sse"
         attributes["sse-connect"] = "/sse?uid=$uid"
