@@ -11,6 +11,10 @@ fun HTML.layout(e: BODY.() -> Unit) {
         script(src = htmx("dist/htmx.min.js")) {}
         script(src = htmx("dist/ext/json-enc.js")) {}
         script(src = htmx("dist/ext/sse.js")) {}
+        script(src = "https://plausible.gmmz.dev/js/script.js") {
+            defer = true
+            attributes["data-domain"] = "htmx-ktor.gmmz.dev"
+        }
     }
 
     body {
