@@ -5,7 +5,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
-import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
@@ -32,7 +32,7 @@ fun Application.module() {
 fun Application.configureMisc() {
     install(Webjars)
 
-    if (environment.developmentMode)
+    if (developmentMode)
         install(CallLogging) {
             level = Level.INFO
             filter { call -> call.request.path().startsWith("/") }
@@ -46,9 +46,9 @@ fun Application.configureMisc() {
     }
 
     install(Compression) {
-         condition {
-             it.contentType != ContentType.Text.EventStream
-         }
+        condition {
+            it.contentType != ContentType.Text.EventStream
+        }
 
         gzip {
             priority = 1.0
