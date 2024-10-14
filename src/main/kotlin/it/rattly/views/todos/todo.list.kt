@@ -4,7 +4,6 @@ import it.rattly.views.layout.layout
 import kotlinx.html.*
 import kotlinx.html.InputType.*
 import java.util.*
-import java.util.concurrent.ThreadLocalRandom
 
 fun HTML.listTodos() = layout {
     val uid = UUID.randomUUID()

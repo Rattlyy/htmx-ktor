@@ -1,11 +1,10 @@
 package it.rattly.plugins.db.todo
 
 import com.zaxxer.hikari.HikariDataSource
-import it.rattly.plugins.triggerSSE
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.intellij.lang.annotations.Language
-import java.sql.Connection
 import java.sql.Statement
 
 @Serializable
