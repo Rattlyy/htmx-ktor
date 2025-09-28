@@ -11,12 +11,12 @@ fun Application.configureStyles() = routing {
         call.respondCss {
             // padding left
             rule(".pl") {
-                margin(left = 20.px)
+                margin= Margin(left = 20.px)
             }
         }
     }
 }
 
-suspend inline fun ApplicationCall.respondCss(builder: CSSBuilder.() -> Unit) {
-    this.respondText(CSSBuilder().apply(builder).toString(), ContentType.Text.CSS)
+suspend inline fun ApplicationCall.respondCss(builder: CssBuilder.() -> Unit) {
+    this.respondText(CssBuilder().apply(builder).toString(), ContentType.Text.CSS)
 }

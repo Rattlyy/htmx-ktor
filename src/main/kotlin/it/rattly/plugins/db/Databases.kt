@@ -49,7 +49,6 @@ fun connectToPostgres(embedded: Boolean): HikariDataSource {
         setMaximumPoolSize(20)
     }
 
-    if (embedded) {
         val dataSource = HikariDataSource(config.apply {
             this.username = "root"
             this.password = ""
@@ -59,15 +58,4 @@ fun connectToPostgres(embedded: Boolean): HikariDataSource {
         })
 
         return dataSource
-    } else {
-        val dataSource = HikariDataSource(config.apply {
-            this.username = System.getenv("postgres.user")
-            this.password = System.getenv("postgres.password")
-
-            setDriverClassName("org.postgresql.Driver")
-            setJdbcUrl(System.getenv("postgres.url"))
-        })
-
-        return dataSource
-    }
 }
