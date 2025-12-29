@@ -11,7 +11,7 @@ fun Application.configureStyles() = routing {
         call.respondCss {
             // padding left
             rule(".pl") {
-                margin= Margin(left = 20.px)
+                margin = Margin(left = 20.px)
             }
         }
     }

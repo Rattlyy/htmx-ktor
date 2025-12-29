@@ -53,9 +53,9 @@ fun Application.configureMisc() {
     }
 
     install(Compression) {
-         condition {
-             it.contentType != ContentType.Text.EventStream
-         }
+        condition {
+            it.contentType != ContentType.Text.EventStream
+        }
 
         gzip {
             priority = 1.0

@@ -29,7 +29,7 @@ application {
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers") }
+//    maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers") }
 }
 
 dependencies {
@@ -42,6 +42,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("io.ktor:ktor-server-html-builder-jvm")
     implementation("io.ktor:ktor-server-cio-jvm")
+    implementation("io.ktor:ktor-server-sse")
 
     implementation("org.webjars.npm:htmx.org:$webjars_htmx_version")
     implementation("org.webjars.npm:htmx-ext-sse:$webjars_htmx_ext_sse_version")
@@ -50,4 +51,11 @@ dependencies {
     implementation("com.h2database:h2:$h2_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("com.zaxxer:HikariCP:$hikari_version")
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+
 }

@@ -2,19 +2,14 @@ package it.rattly.plugins.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import it.rattly.plugins.db.todo.TodoService
 import it.rattly.plugins.db.todo.todoRoutes
-import kotlinx.coroutines.*
-import java.sql.*
+import java.sql.Connection
 
 
 fun Application.configureDatabases() {
-    todoRoutes(TodoService(connectToPostgres(System.getenv("USE_EMBEDDED_DB").toBoolean())))
+    todoRoutes(TodoService(connectToPostgres(System.getenv("USE_EMBEDDED_DB") == "true")))
 }
 
 /**
@@ -38,7 +33,7 @@ fun Application.configureDatabases() {
  * @return [Connection] that represent connection to the database. Please, don't forget to close this connection when
  * your application shuts down by calling [Connection.close]
  * */
-fun connectToPostgres(embedded: Boolean): HikariDataSource {
+fun connectToPostgres(embedded: Boolean = true): HikariDataSource {
     Class.forName("org.postgresql.Driver")
 
     val config = HikariConfig().apply {
