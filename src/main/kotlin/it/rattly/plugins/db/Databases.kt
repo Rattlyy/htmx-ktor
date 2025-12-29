@@ -9,7 +9,7 @@ import java.sql.Connection
 
 
 fun Application.configureDatabases() {
-    todoRoutes(TodoService(connectToPostgres()))
+    todoRoutes(TodoService(connectToPostgres(System.getenv("USE_EMBEDDED_DB") == "true")))
 }
 
 /**
