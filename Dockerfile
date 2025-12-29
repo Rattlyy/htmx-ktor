@@ -3,7 +3,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle buildFatJar --no-daemon
 
-FROM openjdk:11
+FROM amazoncorretto:11-alpine
 EXPOSE 8080:8080
 RUN mkdir /app
 COPY --from=build /home/gradle/src/build/libs/ktor-htmx-all.jar /app/ktor-htmx-all.jar
