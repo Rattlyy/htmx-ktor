@@ -1,0 +1,37 @@
+
+[versions]
+kotlin = "2.2.10"
+ktor = "3.2.3"
+kotlin_css = "2025.9.11"
+logback = "1.5.18"
+h2 = "2.4.240"
+postgres = "42.7.8"
+hikari = "7.0.2"
+webjars_htmx = "2.0.7"
+webjars_htmx_ext_sse = "2.2.3"
+
+[plugins]
+kotlin_jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin_serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+
+[libraries]
+kotlin_css = { module = "org.jetbrains.kotlin-wrappers:kotlin-css", version.ref = "kotlin_css" }
+ktor_server_core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor_server_webjars = { module = "io.ktor:ktor-server-webjars-jvm", version.ref = "ktor" }
+ktor_server_compression = { module = "io.ktor:ktor-server-compression-jvm", version.ref = "ktor" }
+ktor_server_call_logging = { module = "io.ktor:ktor-server-call-logging-jvm", version.ref = "ktor" }
+ktor_server_content_negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktor_serialization_json = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+ktor_server_html_builder = { module = "io.ktor:ktor-server-html-builder-jvm", version.ref = "ktor" }
+ktor_server_cio = { module = "io.ktor:ktor-server-cio-jvm", version.ref = "ktor" }
+ktor_server_sse = { module = "io.ktor:ktor-server-sse", version.ref = "ktor" }
+
+webjars_htmx = { module = "org.webjars.npm:htmx.org", version.ref = "webjars_htmx" }
+webjars_htmx_ext_sse = { module = "org.webjars.npm:htmx-ext-sse", version.ref = "webjars_htmx_ext_sse" }
+
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+

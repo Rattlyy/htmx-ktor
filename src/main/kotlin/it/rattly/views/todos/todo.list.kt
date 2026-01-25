@@ -15,7 +15,7 @@ fun HTML.listTodos() = layout {
             id = "list"
 
             attributes["hx-get"] = "/todos"
-            attributes["hx-trigger"] = "load,sse:newTodo"
+            attributes["hx-trigger"] = "load,sse:refresh"
 
             p(classes = "htmx-indicator") { +"Loading..." }
         }

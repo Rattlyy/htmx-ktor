@@ -7,6 +7,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.logging.error
 import it.rattly.plugins.triggerSSE
 import it.rattly.views.todos.todo
 import kotlinx.html.*
@@ -50,7 +51,7 @@ fun Application.todoRoutes(todoService: TodoService) {
             try {
                 val todo = todoService.findById(id)
                 call.respond(HttpStatusCode.OK, todo)
-            } catch (e: Exception) {
+            } catch (_: NotFoundException) {
                 call.respond(HttpStatusCode.NotFound)
             }
         }
@@ -88,7 +89,7 @@ fun Application.todoRoutes(todoService: TodoService) {
                         }
                     }
                 }
-            } catch (_: Exception) {
+            } catch (_: NotFoundException) {
                 call.respond(HttpStatusCode.NotFound)
             }
         }
@@ -99,14 +100,8 @@ fun Application.todoRoutes(todoService: TodoService) {
             val todo = call.receive<Todo>().apply { this.id = id }
 
             todoService.update(id, todo)
-            call.respondHtml {
-                body {
-                    li {
-                        todo(todo)
-                    }
-                }
-            }
-
+            call.respond(HttpStatusCode.OK)
+            triggerSSE()
         }
 
         // Delete to-do
@@ -115,6 +110,7 @@ fun Application.todoRoutes(todoService: TodoService) {
 
             todoService.delete(id)
             call.respond(HttpStatusCode.OK)
+            triggerSSE()
         }
     }
 }
