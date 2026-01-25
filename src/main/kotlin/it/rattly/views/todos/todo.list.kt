@@ -6,17 +6,15 @@ import kotlinx.html.InputType.*
 import java.util.*
 
 fun HTML.listTodos() = layout {
-    val uid = UUID.randomUUID()
-
     h1 { +"todos!!!" }
     div {
         attributes["hx-ext"] = "sse"
-        attributes["sse-connect"] = "/sse?uid=$uid"
+        attributes["sse-connect"] = "/sse"
 
         ul {
             id = "list"
 
-            attributes["hx-get"] = "/todos?uid=$uid"
+            attributes["hx-get"] = "/todos"
             attributes["hx-trigger"] = "load,sse:newTodo"
 
             p(classes = "htmx-indicator") { +"Loading..." }
@@ -24,7 +22,7 @@ fun HTML.listTodos() = layout {
     }
 
     form {
-        attributes["hx-post"] = "/todos?uid=$uid"
+        attributes["hx-post"] = "/todos"
         attributes["hx-ext"] = "json-enc"
         attributes["hx-swap"] = "afterbegin"
         attributes["hx-target"] = "#list"

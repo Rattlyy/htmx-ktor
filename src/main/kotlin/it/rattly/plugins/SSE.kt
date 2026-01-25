@@ -8,8 +8,8 @@ import io.ktor.sse.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 val sseFlow = MutableSharedFlow<ServerSentEvent>()
-suspend fun triggerSSE(author: String) {
-    sseFlow.emit(ServerSentEvent(data=author, event = "newTodo"))
+suspend fun triggerSSE() {
+    sseFlow.emit(ServerSentEvent(data = "refresh", event = "refresh"))
 }
 
 fun Application.configureSSE() {
@@ -17,10 +17,6 @@ fun Application.configureSSE() {
 
     routing {
         sse("/sse") {
-            // not sure, how could we use the UID here
-            // probably, we could track the user sessions,
-            // but it's no use if we cannot track the user as SSE is not designed for this
-            val uid = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             sseFlow.collect {
                 send(it)
             }

@@ -11,36 +11,32 @@ import it.rattly.plugins.triggerSSE
 import it.rattly.views.todos.todo
 import kotlinx.html.*
 import kotlinx.html.InputType.text
-import java.sql.Connection
-import javax.sql.DataSource
 
 fun Application.todoRoutes(todoService: TodoService) {
     routing {
         // Create to-do
         post("/todos") {
-            val id = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val todo = call.receive<Todo>().also { todoService.create(it) }
 
             call.respondHtml {
                 body {
                     li {
-                        todo(todo, id)
+                        todo(todo)
                     }
                 }
             }
 
-            triggerSSE(id)
+            triggerSSE()
         }
 
         get("/todos") {
-            val id = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val todos = todoService.readAll()
 
             call.respondHtml {
                 body {
                     for (todoItem in todos.sortedByDescending { it.id }) {
                         li {
-                            todo(todoItem, id)
+                            todo(todoItem)
                         }
                     }
                 }
@@ -61,7 +57,6 @@ fun Application.todoRoutes(todoService: TodoService) {
 
         // Show to-do edit form
         get("/todos/{id}/form") {
-            val uid = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
 
             try {
@@ -69,7 +64,7 @@ fun Application.todoRoutes(todoService: TodoService) {
                 call.respondHtml {
                     body {
                         form {
-                            attributes["hx-put"] = "/todos/$id?uid=$uid"
+                            attributes["hx-put"] = "/todos/$id"
                             attributes["hx-ext"] = "json-enc"
                             attributes["hx-target"] = "closest li"
                             attributes["hx-swap"] = "outerHTML"
@@ -93,14 +88,13 @@ fun Application.todoRoutes(todoService: TodoService) {
                         }
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 call.respond(HttpStatusCode.NotFound)
             }
         }
 
         // Update to-do
         put("/todos/{id}") {
-            val uid = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
             val todo = call.receive<Todo>().apply { this.id = id }
 
@@ -108,22 +102,19 @@ fun Application.todoRoutes(todoService: TodoService) {
             call.respondHtml {
                 body {
                     li {
-                        todo(todo, uid)
+                        todo(todo)
                     }
                 }
             }
 
-            triggerSSE(uid)
         }
 
         // Delete to-do
         delete("/todos/{id}") {
-            val uid = call.request.queryParameters["uid"] ?: throw BadRequestException("no id")
             val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("Invalid ID")
 
             todoService.delete(id)
             call.respond(HttpStatusCode.OK)
-            triggerSSE(uid)
         }
     }
 }
